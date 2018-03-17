@@ -8,6 +8,7 @@ import curses
 import time
 import argparse
 import local
+import xml.etree.ElementTree as ET
 
 
 KEYS_ENTER = (curses.KEY_ENTER, ord('\n'), ord('\r'))
@@ -16,13 +17,15 @@ KEYS_DOWN = (curses.KEY_DOWN, ord('j'))
 KEYS_SELECT = (curses.KEY_RIGHT, ord(' '))
 
 class NoteList:
-  def __init__(self, screen, notes):
-    if len(notes) == 0:
-      raise ValueError('notes should not be an empty list')
+  def __init__(self, screen, session):
+    #if len(notes) == 0:
+    #  raise ValueError('notes should not be an empty list')
 
-    self.notes = notes
+    self.session = session
+    self.notes = session['noteMetadata']
     self.screen = screen
     self.index = 0 
+    self.in_note = False
 
   def move_up(self):
     self.index -= 1
@@ -34,7 +37,7 @@ class NoteList:
     if self.index >= len(self.notes):
       self.index = 0
 
-  def draw(self):
+  def draw(self, draw_note_index=None):
     """draw the curses ui on the screen, handle scroll if needed"""
     self.screen.clear()
 
@@ -58,37 +61,96 @@ class NoteList:
 
     self.screen.refresh()
 
+    if draw_note_index is not None:
+      self.draw_note(draw_note_index)
+
+  def draw_note(self, note_index):
+    note = self.notes[note_index]
+    y,x = self.screen.getmaxyx()
+    note_screen_x = x
+    note_screen_y = y - 10
+    note_screen = curses.newwin(note_screen_y, note_screen_x, 10, 0)
+    status_y = 0
+    status_x = 0
+    status_line = "Title: %s" % (note.title)
+    status_line_length = x - 1
+    status_line_fmt = "%%-%ds" % status_line_length
+    note_screen.addstr(status_y,status_x, status_line_fmt % status_line , curses.color_pair(1))
+    note_screen.addstr(1, 0, "Title: %s" % note.title)
+    created_date_str = convert_epoch_to_date(note.created, False)
+    updated_date_str = convert_epoch_to_date(note.updated, False)
+    content_lines = get_note_content(note_index, self.session)
+    tags = get_note_tags(note_index, self.session)
+    #FIXME: Be smarter about what metadata to display
+    note_screen.addstr(2, 0, "Created: %s" % created_date_str)
+    note_screen.addstr(3, 0, "Updated: %s" % updated_date_str)
+    note_screen.addstr(4, 0, "Guid: %s" % note.guid)
+    note_screen.addstr(5, 0, "Notebook Guid: %s" % note.notebookGuid)
+    note_screen.addstr(6, 0, "Tags: %s" % str(tags))
+    note_screen.addstr(7, 0, "Lines: %d" % len(content_lines))
+    note_screen.addstr(8, 0, "%s" % content_lines)
+
+    #i = 9
+    #for content in content_lines:
+    #  note_screen.addstr(i, 0, "%s" % content)
+    #  i = i + 1
+    #  if i >= y - 1:
+    #    break
+
+    note_screen.refresh()
+    return
+
+
   def run_loop(self):
     while True:
-      self.draw()
+      if self.in_note:
+        self.draw(self.index)
+      else:
+        self.draw()
       c = self.screen.getch()
       if c in KEYS_UP:
         self.move_up()
       elif c in KEYS_DOWN:
         self.move_down()
       elif c in KEYS_ENTER:
-        return self.index
+        self.in_note = True
       elif c == ord('q'):
-        return
+        if self.in_note:
+          self.in_note = False
+        else:
+          return
 
 
-def login():
-  client = EvernoteClient(token=local.dev_token)
-  return client
+def login(args):
+  session = {}
+  session['client'] = EvernoteClient(token=local.dev_token)
+  session['userStore'] = session['client'].get_user_store()
+  session['noteStore'] = session['client'].get_note_store()
+  session['defaultNotebook'] = session['noteStore'].getDefaultNotebook()
+  session['noteMetadata'] = get_notes_metadata(session['noteStore'], session['defaultNotebook'])
+  session['noteCount'] = len(session['noteMetadata'])
+  if args.verbose:
+    print "NoteCount = %d" % session['noteCount']
+  return session
 
-def update_status(scr, stats):
+def update_status(scr, session):
+  notebook = session['defaultNotebook'].name
+  noteCount = session['noteCount']
   y,x = scr.getmaxyx()
   status_y = y - 2
   status_x = 0
-  status_line = "Notebook: %s [Notes: %d]" % (stats['notebook'], stats['notes'])
+  status_line = "Notebook: %s [Notes: %d]" % (notebook, noteCount)
   status_line_length = x - 1
   status_line_fmt = "%%-%ds" % status_line_length
   scr.addstr(status_y,status_x, status_line_fmt % status_line , curses.color_pair(1))
   scr.refresh()
 
-def convert_epoch_to_date(epoch):
+def convert_epoch_to_date(epoch, short=True):
   #time.strftime("%a, %d %b %Y %H:%M:%S %Z", time.localtime(epoch))
-  return time.strftime("%b %d", time.localtime(epoch))
+  if short:
+    return time.strftime("%b %d", time.localtime(epoch))
+  else:
+    return time.strftime("%a, %d %b %Y %H:%M:%S %Z", time.localtime(epoch))
 
 def get_notes_metadata(ns, nb):
   #http://dev.evernote.com/doc/reference/NoteStore.html#Fn_NoteStore_findNotesMetadata 
@@ -99,34 +161,58 @@ def get_notes_metadata(ns, nb):
   notelist =  ns.findNotesMetadata(notefilter, 0, 10, resultspec)
   return notelist.notes
 
-def create_note(ns, text):
+def create_note(session, text):
+  ns = session['noteStore']
   note = Types.Note()
   note.title = text
   note.content = '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">'
   note.content += '<en-note></en-note>'
   note = ns.createNote(note)
 
-def gui(stdscr, notes, stats):
+def gui(stdscr, session):
   # Clear screen
   curses.curs_set(0)
   stdscr.clear()
   curses.init_pair(1, curses.COLOR_YELLOW, curses.COLOR_BLUE)
 
-  update_status(stdscr, stats)
+  update_status(stdscr, session)
   y,x = stdscr.getmaxyx()
   notes_screen_y = y - 2
   #FIXME: set to less than number of notes, to test/fix scrolling
   #notes_screen_y = 5
   notes_screen_x = x
   notes_screen = curses.newwin(notes_screen_y, notes_screen_x, 0, 0)
-  nl = NoteList(notes_screen, notes)
+  nl = NoteList(notes_screen, session)
   note_index = nl.run_loop()
-  return note_index
+  
+  return
+
+def parse_note_content(en_xml):
+  lines = []
+  root = ET.fromstring(en_xml)
+  
+  for div in root.iter('div'):
+    lines.append(div.text)
+    print div.text
+  
+  return lines
+
+def get_note_content(index, session):
+  ns = session['noteStore']
+  notes = session['noteMetadata']
+  #FIXME: replace getNote call with getNoteWithResultSpec
+  note = ns.getNote(notes[index].guid, True, False, False, False)
+  return note.content
+  #return parse_note_content(note.content)
+
+def get_note_tags(index, session):
+  ns = session['noteStore']
+  notes = session['noteMetadata']
+  tags = ns.getNoteTagNames(notes[index].guid)
+  return tags
 
 
 def main():
-  stats = {}
-
   parser = argparse.ArgumentParser()
   parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
   #FIXME: customize create-note option help text to make it clearer how to use
@@ -136,43 +222,16 @@ def main():
   if args.verbose:
     print "verbosity turned on"
 
-  if args.verbose:
-    print "Logging into evernote server"
-  client=login()
-  userStore = client.get_user_store()
-  user =  userStore.getUser()
-  if args.verbose:
-      print "Logged in as user: %s" % user.username
+  session=login(args)
 
-  if args.verbose:
-    print "Retrieving note store"
-  noteStore = client.get_note_store()
-
-  defaultNotebook = noteStore.getDefaultNotebook()
-  stats['notebook'] = defaultNotebook.name
-  if args.verbose:
-    print "Default notebook is: %s" % stats['notebook']
-
-  if args.verbose:
-    print "Retrieving note metadata from default notebook"
-  notes = get_notes_metadata(noteStore, defaultNotebook)
-  stats['notes'] = len(notes)
-  if args.verbose:
-    print "Retrieved metadata for %d notes" % stats['notes']
-    time.sleep(10)
-  
   if args.create_note:
     if args.verbose:
       print "Creating new note"
-    create_note(noteStore, args.create_note)
+    create_note(session, args.create_note)
   else:  
-    index = curses.wrapper(gui, notes, stats)
-    print index
-    print notes[index].title
-    print notes[index].guid
-    #FIXME: replace getNote call with getNoteWithResultSpec
-    note = noteStore.getNote(notes[index].guid, True, False, False, False)
-    print note.content
+    curses.wrapper(gui, session)
+    #print notes[index].title
+    #print notes[index].guid
     
 
 if __name__ == '__main__':
