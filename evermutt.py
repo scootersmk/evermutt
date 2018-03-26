@@ -88,14 +88,14 @@ class NoteList:
     note_screen.addstr(5, 0, "Notebook Guid: %s" % note.notebookGuid)
     note_screen.addstr(6, 0, "Tags: %s" % str(tags))
     note_screen.addstr(7, 0, "Lines: %d" % len(content_lines))
-    note_screen.addstr(8, 0, "%s" % content_lines)
+    #note_screen.addstr(8, 0, "%s" % content_lines)
 
-    #i = 9
-    #for content in content_lines:
-    #  note_screen.addstr(i, 0, "%s" % content)
-    #  i = i + 1
-    #  if i >= y - 1:
-    #    break
+    i = 9
+    for content in content_lines:
+      note_screen.addstr(i, 0, "%s" % content)
+      i = i + 1
+      if i >= y - 1:
+        break
 
     note_screen.refresh()
     return
@@ -190,10 +190,17 @@ def gui(stdscr, session):
 def parse_note_content(en_xml):
   lines = []
   root = ET.fromstring(en_xml)
-  
-  for div in root.iter('div'):
-    lines.append(div.text)
-    print div.text
+
+  if root is not None and root.tag == 'en-note':
+    #handle simple notes blank and oneliners
+    if root.text is not None:
+      lines.append(root.text)
+    else:
+      for e in root.iter('*'):
+        if e.text:
+          lines.append(e.text)
+        elif e.tag == 'br':
+          lines.append("")
   
   return lines
 
@@ -202,8 +209,7 @@ def get_note_content(index, session):
   notes = session['noteMetadata']
   #FIXME: replace getNote call with getNoteWithResultSpec
   note = ns.getNote(notes[index].guid, True, False, False, False)
-  return note.content
-  #return parse_note_content(note.content)
+  return parse_note_content(note.content)
 
 def get_note_tags(index, session):
   ns = session['noteStore']
