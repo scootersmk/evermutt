@@ -194,12 +194,13 @@ def cache(session, offline=False):
       #print "Cacheing note %s in %s" % (note.guid, content_fname)
       #FIXME: Add cache attributes to root element: guid, version/timestamp, etc
       note_cache_xml = ET.Element('note')
-      tags_xml = ET.SubElement(note_cache_xml, 'tags')
       tags = get_note_tags(idx, session)
-      for t in tags:
-        attribs = {}
-        attribs['text'] = t
-        tag_xml = ET.SubElement(tags_xml, 'tag', attribs)
+      if len(tags):
+        tags_xml = ET.SubElement(note_cache_xml, 'tags')
+        for t in tags:
+          attribs = {}
+          attribs['text'] = t
+          tag_xml = ET.SubElement(tags_xml, 'tag', attribs)
       #print content
       fdesc = open(metadata_fname, "w")
       metadata_content = ET.tostring(note_cache_xml)
