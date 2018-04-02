@@ -6,12 +6,14 @@ from evernote.api.client import EvernoteClient
 import evernote.edam.notestore.ttypes as NotesStore
 import evernote.edam.type.ttypes as Types
 import curses
-import time
 import argparse
 import local
 import xml.etree.ElementTree as ET
 import os
 import sys
+
+#Local modules
+from misc import *
 
 
 KEYS_ENTER = (curses.KEY_ENTER, ord('\n'), ord('\r'))
@@ -232,13 +234,6 @@ def update_status(scr, session):
              status_line_fmt % status_line,
              curses.color_pair(1))
   scr.refresh()
-
-def convert_epoch_to_date(epoch, short=True):
-  #time.strftime("%a, %d %b %Y %H:%M:%S %Z", time.localtime(epoch))
-  if short:
-    return time.strftime("%b %d", time.localtime(epoch))
-  else:
-    return time.strftime("%a, %d %b %Y %H:%M:%S %Z", time.localtime(epoch))
 
 def get_notes_metadata(ns, nb):
   notefilter = NotesStore.NoteFilter()
