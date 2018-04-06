@@ -98,8 +98,9 @@ class EmGui:
     note_screen.addstr(1, 0, "Title: %s" % note.title)
     created_date_str = convert_epoch_to_date(note.created, False)
     updated_date_str = convert_epoch_to_date(note.updated, False)
-    content_lines = self.session.get_note_content(guid)
-    tags = self.session.get_note_tags(guid)
+    #content_lines = self.session.get_note_content(guid)
+    #tags = self.session.get_note_tags(guid)
+    tags, content_lines = self.session.get_note(guid)
     #FIXME: Be smarter about what metadata to display
     note_screen.addstr(2, 0, "Created: %s" % created_date_str)
     note_screen.addstr(3, 0, "Updated: %s" % updated_date_str)
