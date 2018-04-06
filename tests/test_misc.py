@@ -1,7 +1,7 @@
 import unittest
 
-import sys
-sys.path.insert(0,'..')
+#import sys
+#sys.path.insert(0,'..')
 from misc import *
 
 class TestMisc(unittest.TestCase):
