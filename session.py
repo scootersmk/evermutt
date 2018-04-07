@@ -66,6 +66,8 @@ class EnSession:
     notefilter.notebookGuid = self.defaultNotebook.guid
     resultspec = NotesStore.NotesMetadataResultSpec()
     resultspec.includeTitle = True
+    resultspec.includeCreated = True
+    resultspec.includeUpdated = True
     notelist = self.noteStore.findNotesMetadata(notefilter, 0, 10, resultspec)
     return notelist.notes
 
