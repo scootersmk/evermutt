@@ -112,7 +112,7 @@ class EmGui:
     #FIXME: Test notes longer than display
     i = 9
     for content in content_lines:
-      note_screen.addstr(i, 0, "%s" % content)
+      note_screen.addstr(i, 2, "%s" % content)
       i = i + 1
       if i >= y - 1:
         break

@@ -82,7 +82,7 @@ class EnSession:
       tags = self.get_note_tags(note_guid)
       content_lines = self.get_note_content(note_guid)
 
-    return tags,content_lines
+    return tags, content_lines
 
   def get_note_content(self, note_guid, raw=False):
     note = self.noteStore.getNote(note_guid, True, False, False, False)

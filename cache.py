@@ -31,18 +31,26 @@ class EmCache:
       self.write_metadata(metadata_fname, tags)
 
     if file_exists(content_fname):
-      content = self.read_content(content_fname)
-      content_lines = parse_note_content(content)
+      content_lines = self.read_content(content_fname)
     else:
       content = session.get_note_content(note_guid, True)
       self.write_content(content_fname, content)
       content_lines = parse_note_content(content)
 
-    return tags,content
+    return tags,content_lines
 
   def read_metadata(self, fname):
-    print "read_metadata is NOT yet implemented!" 
-    sys.exit(1)
+    #FIXME: support other metadata
+    tags = []
+    xml = ET.parse(fname)
+    root_xml = xml.getroot()
+    tags_xml = root_xml.find('tags')
+    if tags_xml is not None:
+      for tag in tags_xml.findall('tag'):
+        tags.append(tag.get('name'))
+    
+    return tags
+    
 
   def write_metadata(self, fname, tags):
     note_cache_xml = ET.Element('note')
@@ -50,7 +58,7 @@ class EmCache:
       tags_xml = ET.SubElement(note_cache_xml, 'tags')
       for t in tags:
         attribs = {}
-        attribs['text'] = t
+        attribs['name'] = t
         tag_xml = ET.SubElement(tags_xml, 'tag', attribs)
     #print content
     fdesc = open(fname, "w")
@@ -59,8 +67,10 @@ class EmCache:
     fdesc.close()
 
   def read_content(self, fname):
-    print "read_content is NOT yet implemented!" 
-    sys.exit(1)
+    with open(fname, 'r') as xmlfile:
+      enxml = xmlfile.read()
+    content_lines = parse_note_content(enxml)
+    return content_lines
 
   def write_content(self, fname, content):
     fdesc = open(fname, "w")
