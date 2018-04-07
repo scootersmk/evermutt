@@ -5,11 +5,14 @@ import os
 import sys
 
 def convert_epoch_to_date(epoch, short=True):
+  """Evernote timestamps are *miliseconds* since epoch, so we strip
+     off the last 3 zeros"""
   #time.strftime("%a, %d %b %Y %H:%M:%S %Z", time.localtime(epoch))
+  epoch_seconds = epoch / 1000
   if short:
-    return time.strftime("%b %d", time.localtime(epoch))
+    return time.strftime("%b %d", time.localtime(epoch_seconds))
   else:
-    return time.strftime("%a, %d %b %Y %H:%M:%S %Z", time.localtime(epoch))
+    return time.strftime("%a, %d %b %Y %H:%M:%S %Z", time.localtime(epoch_seconds))
 
 def file_exists(filename):
   try:
