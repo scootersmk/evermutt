@@ -1,5 +1,7 @@
 # Evermutt
 
+[![Build Status](https://travis-ci.org/scootersmk/evermutt.svg?branch=master)](https://travis-ci.org/scootersmk/evermutt)
+
 ## Development Status
 ### What works
 - Create a simple note from the command line
