@@ -11,7 +11,7 @@ def parse_note_content(en_xml):
     if root.text is not None:
       lines.append(root.text)
     else:
-      for e in root.iter('*'):
+      for e in root.findall('*'):
         if e.text:
           lines.append(e.text)
         elif e.tag == 'br':
