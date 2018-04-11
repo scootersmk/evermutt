@@ -25,6 +25,7 @@
 - handling updates from the server, new/update/deleted notes
 - handling conflicts from the server
 - view raw note content(in XML)
+- view previous versions of notes
 - config file to specify
   - disabling caching
   - override editor
@@ -32,6 +33,20 @@
   - Default notebook
   - Change keybindings
   - Customize metadata to display
+
+## Editing Modes
+
+Strategies to ensure we don't "corrupt" formatting of existing notes that are created with GUI/Web clients.
+
+### Different Modes
+- read-only: only read existing notes, don't make any changes to notes or create new notes
+- read-create: read existing notes and create new notes
+- read-create-delete: same as read-create, but also delete any existing note
+- read-create-delete-modify-local: same as read-create-delete, but also modify notes created locally
+- read-create-delete-modify-all: same as read-create-delete but also modify all notes
+
+### Protection Mode
+Mark notes that are created in other clients as "protected" and warn users before allowing them to modify protected notes
 
 ## Development Links
 - http://dev.evernote.com/doc/start/python.php
