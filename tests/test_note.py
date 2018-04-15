@@ -1,6 +1,6 @@
 import unittest
 
-from note import *
+from evermutt.note import *
 
 class TestNote(unittest.TestCase):
 

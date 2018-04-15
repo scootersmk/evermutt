@@ -2,7 +2,7 @@ import unittest
 
 #import sys
 #sys.path.insert(0,'..')
-from misc import *
+from evermutt.misc import *
 
 class TestMisc(unittest.TestCase):
 
