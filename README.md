@@ -54,3 +54,4 @@ Mark notes that are created in other clients as "protected" and warn users befor
 - https://github.com/evernote/evernote-sdk-python/
 - https://sandbox.evernote.com/
 - http://dev.evernote.com/doc/articles/enml.php
+- https://dev.evernote.com/doc/articles/synchronization.php
