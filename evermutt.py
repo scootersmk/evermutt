@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-#FIXME: Test python3 in seperate branch
 
 import curses
 import argparse
@@ -14,7 +13,7 @@ def gui_setup(stdscr, session):
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument("-v", 
+  parser.add_argument("-v",
                       "--verbose",
                       help="increase output verbosity",
                       action="store_true")
