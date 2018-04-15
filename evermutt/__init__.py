@@ -4,8 +4,8 @@ import curses
 import argparse
 import sys
 #Local modules
-from gui import EmGui
-from session import EnSession
+from evermutt.gui import EmGui
+from evermutt.session import EnSession
 
 def gui_setup(stdscr, session):
   gui = EmGui(session)

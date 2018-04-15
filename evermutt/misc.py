@@ -10,9 +10,10 @@ def convert_epoch_to_date(epoch, short=True):
   #time.strftime("%a, %d %b %Y %H:%M:%S %Z", time.localtime(epoch))
   epoch_seconds = epoch / 1000
   if short:
-    return time.strftime("%b %d", time.localtime(epoch_seconds))
+    time_str = time.strftime("%b %d", time.localtime(epoch_seconds))
   else:
-    return time.strftime("%a, %d %b %Y %H:%M:%S %Z", time.localtime(epoch_seconds))
+    time_str = time.strftime("%a, %d %b %Y %H:%M:%S %Z", time.localtime(epoch_seconds))
+  return time_str
 
 def file_exists(filename):
   try:

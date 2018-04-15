@@ -6,11 +6,11 @@ import evernote.edam.notestore.ttypes as NotesStore
 import evernote.edam.type.ttypes as Types
 
 #Local modules
-from note import *
-from config import EmConfig
-from cache import EmCache
+from evermutt.note import *
+from evermutt.config import EmConfig
+from evermutt.cache import EmCache
 
-class EnSession:
+class EnSession(object):
   def __init__(self, args):
     #if len(notes) == 0:
     #  raise ValueError('notes should not be an empty list')
@@ -56,10 +56,7 @@ class EnSession:
                    "http://xml.evernote.com/pub/enml2.dtd">'
     note.content += '<en-note></en-note>'
     note = self.noteStore.createNote(note)
-    if note is not None:
-      return True
-    else:
-      return False
+    return bool(note)
 
   def _get_note_metadata(self):
     notefilter = NotesStore.NoteFilter()
@@ -89,9 +86,10 @@ class EnSession:
   def get_note_content(self, note_guid, raw=False):
     note = self.noteStore.getNote(note_guid, True, False, False, False)
     if raw:
-      return note.content
+      content = note.content
     else:
-      return parse_note_content(note.content)
+      content = parse_note_content(note.content)
+    return content
 
   def get_note_tags(self, note_guid):
     tags = self.noteStore.getNoteTagNames(note_guid)

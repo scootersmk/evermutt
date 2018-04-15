@@ -3,14 +3,14 @@
 import curses
 
 #Local modules
-from misc import *
+from evermutt.misc import *
 
 KEYS_ENTER = (curses.KEY_ENTER, ord('\n'), ord('\r'))
 KEYS_UP = (curses.KEY_UP, ord('k'))
 KEYS_DOWN = (curses.KEY_DOWN, ord('j'))
 KEYS_SELECT = (curses.KEY_RIGHT, ord(' '))
 
-class EmGui:
+class EmGui(object):
   def __init__(self, session):
     #if len(notes) == 0:
     #  raise ValueError('notes should not be an empty list')
@@ -34,7 +34,7 @@ class EmGui:
     #notes_screen_y = 5
     notes_screen_x = x
     self.notes_screen = curses.newwin(notes_screen_y, notes_screen_x, 0, 0)
-    
+
     #Create window that will contain the status bar
     status_y = y - 2
     status_x = 0
@@ -56,7 +56,6 @@ class EmGui:
     """draw the curses ui on the screen, handle scroll if needed"""
     self.notes_screen.clear()
 
-    x, y = 0, 0  # start point
     max_y, max_x = self.notes_screen.getmaxyx()
     max_rows = max_y - 1  # the max rows we can draw
 
@@ -66,19 +65,25 @@ class EmGui:
     title_length = 40
     tags_length = 30
 
-    line_str_fmt = "%%-%ds %%-%ds %%-%ds %%-%ds" % (index_length, date_length, title_length, tags_length)
+    line_str_fmt = "%%-%ds %%-%ds %%-%ds %%-%ds" % (index_length,
+                                                    date_length,
+                                                    title_length,
+                                                    tags_length)
 
     header_y = 0
-    header_x= 0
+    header_x = 0
     header_line = line_str_fmt % ("#", "Date", "Title", "Tags")
     header_line_length = max_x - 1
     header_line_fmt = "%%-%ds" % header_line_length
-    self.notes_screen.addstr(header_y, header_x, header_line_fmt % header_line, curses.color_pair(1))
+    self.notes_screen.addstr(header_y,
+                             header_x,
+                             header_line_fmt % header_line,
+                             curses.color_pair(1))
 
     for idx, note in enumerate(self.notes, 0):
       if idx < max_rows:
         date_str = convert_epoch_to_date(note.created)
-        tags, content_lines = self.session.get_note(note.guid)
+        tags = self.session.get_note(note.guid)[0]
         tags_str = ", ".join(tags)
         note_line = line_str_fmt % (str(idx+1), date_str, note.title, tags_str)
         note_line_length = max_x - 1
@@ -158,7 +163,7 @@ class EmGui:
     notebook = self.session.notebook_name
     metadata = self.session.get_note_metadata()
     noteCount = len(metadata)
-    y, x = self.status_screen.getmaxyx()
+    x = self.status_screen.getmaxyx()[1]
     status_line = "Notebook: %s [Notes: %d]" % (notebook, noteCount)
     status_line_length = x - 1
     status_line_fmt = "%%-%ds" % status_line_length
