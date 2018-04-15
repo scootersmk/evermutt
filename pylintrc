@@ -3,20 +3,23 @@ indent-string='  '
 
 [DISABLE CONTROL]
 disable=
-    missing-docstring,
-    unused-argument,
-    too-few-public-methods,
-    invalid-name,
     bad-continuation,
     fixme,
-    locally-disabled,
+    invalid-name,
     inconsistent-return-statements,
     keyword-arg-before-vararg,
-    wrong-import-order
+    missing-docstring,
+    too-few-public-methods,
+    too-many-instance-attributes,
+    too-many-locals,
+    unused-argument,
+    unused-wildcard-import,
+    wrong-import-order,
+    wildcard-import
 #max-branches=20
 #max-bool-expr=6
 #max-args=8
-#max-line-length=1000
+max-line-length=120
 
 [REPORTS]
 reports=no
