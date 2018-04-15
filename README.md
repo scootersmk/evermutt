@@ -33,6 +33,7 @@
   - Default notebook
   - Change keybindings
   - Customize metadata to display
+  - Change color scheme
 
 ## Editing Modes
 
