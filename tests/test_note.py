@@ -14,5 +14,10 @@ class TestNote(unittest.TestCase):
         content = parse_note_content(en_xml)
         assert content == ['Test 1 2 3']
 
+    def test_parse_note_content_multi_line(self):
+        en_xml = '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd"><en-note><div>multi</div><div>line</div></en-note>'
+        content = parse_note_content(en_xml)
+        assert content == ['multi','line']
+
 if __name__ == '__main__':
     unittest.main()
