@@ -2,3 +2,5 @@ local.*
 venv
 *.pyc
 test.sh
+*.tox
+*.egg-info

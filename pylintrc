@@ -1,0 +1,26 @@
+[FORMAT]
+indent-string='  '
+
+[DISABLE CONTROL]
+disable=
+    bad-continuation,
+    fixme,
+    invalid-name,
+    inconsistent-return-statements,
+    keyword-arg-before-vararg,
+    missing-docstring,
+    too-few-public-methods,
+    too-many-instance-attributes,
+    too-many-locals,
+    unused-argument,
+    unused-wildcard-import,
+    wrong-import-order,
+    wildcard-import
+#max-branches=20
+#max-bool-expr=6
+#max-args=8
+max-line-length=120
+
+[REPORTS]
+reports=no
+msg-template={path}:{line}: {msg_id} {symbol} {msg}

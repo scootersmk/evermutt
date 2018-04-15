@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 
 import os
-import sys
 
 #local modules
-from misc import *
+from evermutt.misc import *
 
-class EmConfig:
+class EmConfig(object):
   def __init__(self, args):
 
     #Defaults

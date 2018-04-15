@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
 import os
-import sys
 import xml.etree.ElementTree as ET
 
 #local modules
-from misc import *
-from note import *
+from evermutt.misc import *
+from evermutt.note import *
 
-class EmCache:
+class EmCache(object):
   def __init__(self, directory):
 
     #Defaults
@@ -21,8 +20,10 @@ class EmCache:
       dir_create(self.cache_dir)
 
   def get_note(self, note_guid, session):
-    metadata_fname = os.path.join(self.cache_dir, "%s.metadata.xml" % (note_guid))
-    content_fname = os.path.join(self.cache_dir, "%s.xml" % note_guid)
+    metadata_fname = os.path.join(self.cache_dir,
+                                  "%s.metadata.xml" % (note_guid))
+    content_fname = os.path.join(self.cache_dir,
+                                 "%s.xml" % note_guid)
 
     if file_exists(metadata_fname):
       tags = self.read_metadata(metadata_fname)
@@ -37,9 +38,10 @@ class EmCache:
       self.write_content(content_fname, content)
       content_lines = parse_note_content(content)
 
-    return tags,content_lines
+    return tags, content_lines
 
-  def read_metadata(self, fname):
+  @staticmethod
+  def read_metadata(fname):
     #FIXME: support other metadata
     tags = []
     xml = ET.parse(fname)
@@ -48,31 +50,34 @@ class EmCache:
     if tags_xml is not None:
       for tag in tags_xml.findall('tag'):
         tags.append(tag.get('name'))
-    
-    return tags
-    
 
-  def write_metadata(self, fname, tags):
+    return tags
+
+
+  @staticmethod
+  def write_metadata(fname, tags):
     note_cache_xml = ET.Element('note')
-    if len(tags):
+    if tags:
       tags_xml = ET.SubElement(note_cache_xml, 'tags')
       for t in tags:
         attribs = {}
         attribs['name'] = t
-        tag_xml = ET.SubElement(tags_xml, 'tag', attribs)
+        ET.SubElement(tags_xml, 'tag', attribs)
     #print content
     fdesc = open(fname, "w")
     metadata_content = ET.tostring(note_cache_xml)
     fdesc.write(metadata_content)
     fdesc.close()
 
-  def read_content(self, fname):
+  @staticmethod
+  def read_content(fname):
     with open(fname, 'r') as xmlfile:
       enxml = xmlfile.read()
     content_lines = parse_note_content(enxml)
     return content_lines
 
-  def write_content(self, fname, content):
+  @staticmethod
+  def write_content(fname, content):
     fdesc = open(fname, "w")
     fdesc.write(content)
     fdesc.close()
