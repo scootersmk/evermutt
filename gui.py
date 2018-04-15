@@ -60,19 +60,33 @@ class EmGui:
     max_y, max_x = self.notes_screen.getmaxyx()
     max_rows = max_y - 1  # the max rows we can draw
 
-    index_length = 4
-    date_length = 5
-    title_length = max_x - index_length - date_length - 3
-    line_str_fmt = "%%%dd %%%ds %%-%ds" % (index_length, date_length, title_length)
+    #FIXME: Check to make sure we will fit in the screen
+    index_length = 5
+    date_length = 8
+    title_length = 40
+    tags_length = 30
 
-    for note in self.notes:
-      if y < max_rows:
+    line_str_fmt = "%%-%ds %%-%ds %%-%ds %%-%ds" % (index_length, date_length, title_length, tags_length)
+
+    header_y = 0
+    header_x= 0
+    header_line = line_str_fmt % ("#", "Date", "Title", "Tags")
+    header_line_length = max_x - 1
+    header_line_fmt = "%%-%ds" % header_line_length
+    self.notes_screen.addstr(header_y, header_x, header_line_fmt % header_line, curses.color_pair(1))
+
+    for idx, note in enumerate(self.notes, 0):
+      if idx < max_rows:
         date_str = convert_epoch_to_date(note.created)
-        if y == self.index:
-          self.notes_screen.addstr(y, 0, line_str_fmt % (y+1, date_str, note.title), curses.color_pair(1))
+        tags, content_lines = self.session.get_note(note.guid)
+        tags_str = ", ".join(tags)
+        note_line = line_str_fmt % (str(idx+1), date_str, note.title, tags_str)
+        note_line_length = max_x - 1
+        note_line_fmt = "%%-%ds" % note_line_length
+        if idx == self.index:
+          self.notes_screen.addstr(idx + 1, 0, note_line_fmt % note_line, curses.color_pair(1))
         else:
-          self.notes_screen.addstr(y, 0, line_str_fmt % (y+1, date_str, note.title))
-        y += 1
+          self.notes_screen.addstr(idx + 1, 0, note_line_fmt % note_line)
 
     self.notes_screen.refresh()
 
