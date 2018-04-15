@@ -4,7 +4,6 @@
 from evernote.api.client import EvernoteClient
 import evernote.edam.notestore.ttypes as NotesStore
 import evernote.edam.type.ttypes as Types
-import local
 
 #Local modules
 from note import *
@@ -41,7 +40,8 @@ class EnSession:
       self.cache = EmCache(self.config.cache_dir)
 
   def login(self):
-    self.client = EvernoteClient(token=local.dev_token)
+    dev_token = "S=s1:U=94719:E=1694a2fc3bc:C=161f27e9730:P=1cd:A=en-devtoken:V=2:H=8fb990d19b11965244f062dbb9ca06ec"
+    self.client = EvernoteClient(token=dev_token)
     self.userStore = self.client.get_user_store()
     self.noteStore = self.client.get_note_store()
     self.defaultNotebook = self.noteStore.getDefaultNotebook()
