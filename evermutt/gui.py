@@ -98,6 +98,19 @@ class EmGui(object):
     if draw_note_index is not None:
       self.draw_note(draw_note_index)
 
+  def draw_prompt(self, message):
+    y, x = self.notes_screen.getmaxyx()
+    prompt_size_x = x / 2
+    prompt_size_y = y / 2
+    prompt_screen = curses.newwin(prompt_size_y, prompt_size_x, 15, 15)
+    prompt_screen.box()
+    prompt_screen.refresh()
+
+    while True:
+      c = prompt_screen.getch()
+      if c is not None:
+        return
+
   def draw_note(self, note_index):
     note = self.notes[note_index]
     guid = note.guid
@@ -120,12 +133,13 @@ class EmGui(object):
     #content_lines = self.session.get_note_content(guid)
     #tags = self.session.get_note_tags(guid)
     tags, content_lines = self.session.get_note(guid)
+    tags_str = ", ".join(tags)
     #FIXME: Be smarter about what metadata to display
     note_screen.addstr(2, 0, "Created: %s" % created_date_str)
     note_screen.addstr(3, 0, "Updated: %s" % updated_date_str)
     note_screen.addstr(4, 0, "Guid: %s" % note.guid)
     note_screen.addstr(5, 0, "Notebook Guid: %s" % note.notebookGuid)
-    note_screen.addstr(6, 0, "Tags: %s" % str(tags))
+    note_screen.addstr(6, 0, "Tags: %s" % tags_str)
     note_screen.addstr(7, 0, "Lines: %d" % len(content_lines))
 
     #FIXME: Test notes longer than display
@@ -158,6 +172,8 @@ class EmGui(object):
           self.in_note = False
         else:
           return
+      elif c == ord('h'):
+        self.draw_prompt("Hello World")
 
   def update_status(self):
     notebook = self.session.notebook_name
