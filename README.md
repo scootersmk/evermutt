@@ -35,6 +35,21 @@
   - Customize metadata to display
   - Change color scheme
 
+## GUI design
+- Note List
+  - Change Notebook(c)
+  - Sort Notes(s)
+    - By date
+    - By tags
+    - By title
+  - Sync(S)
+  - View Note
+    - Edit Note Content
+    - Tag Note
+    - Trash Note
+  - Create Note(n)
+  - Search(/)
+
 ## Editing Modes
 
 Strategies to ensure we don't "corrupt" formatting of existing notes that are created with GUI/Web clients.
