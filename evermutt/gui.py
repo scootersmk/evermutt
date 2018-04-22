@@ -10,13 +10,61 @@ KEYS_UP = (curses.KEY_UP, ord('k'))
 KEYS_DOWN = (curses.KEY_DOWN, ord('j'))
 KEYS_SELECT = (curses.KEY_RIGHT, ord(' '))
 
-class EmGui(object):
+class GuiSelectableList(object):
+  def __init__(self, items, title, screen):
+    self.index = 0
+    self.items = items
+    self.title = title
+    self.screen = screen
+
+  def move_up(self):
+    self.index -= 1
+    if self.index < 0:
+      self.index = len(self.items) - 1
+
+  def move_down(self):
+    self.index += 1
+    if self.index >= len(self.items):
+      self.index = 0
+
+  def draw_list(self):
+    self.screen.clear()
+
+    max_y, max_x = self.screen.getmaxyx()
+    max_rows = max_y - 1  # the max rows we can draw
+    max_length = max_x - 1
+
+    self.screen.addstr(0, 0, self.title)
+
+    for idx, item in enumerate(self.items, 0):
+      if idx < max_rows:
+        if idx == self.index:
+          self.screen.addstr(idx + 1, 0, item[:max_length], curses.color_pair(1))
+        else:
+          self.screen.addstr(idx + 1, 0, item[:max_length])
+
+    self.screen.refresh()
+
+  def run_loop(self):
+    while True:
+      self.draw_list()
+      c = self.screen.getch()
+      if c in KEYS_UP:
+        self.move_up()
+      elif c in KEYS_DOWN:
+        self.move_down()
+      elif c in KEYS_ENTER:
+        return self.index
+      elif c == ord('q'):
+        return self.index
+
+class EmGui(GuiSelectableList):
   def __init__(self, session):
     #if len(notes) == 0:
     #  raise ValueError('notes should not be an empty list')
 
     self.session = session
-    self.notes = self.session.get_note_metadata()
+    self.items = self.session.get_note_metadata()
     self.notes_screen = None
     self.status_screen = None
     self.index = 0
@@ -47,17 +95,8 @@ class EmGui(object):
 
     self.run_loop()
 
-  def move_up(self):
-    self.index -= 1
-    if self.index < 0:
-      self.index = len(self.notes) - 1
 
-  def move_down(self):
-    self.index += 1
-    if self.index >= len(self.notes):
-      self.index = 0
-
-  def draw_notelist(self, draw_note_index=None):
+  def draw_list(self, draw_note_index=None):
     """draw the curses ui on the screen, handle scroll if needed"""
     self.notes_screen.clear()
 
@@ -85,7 +124,7 @@ class EmGui(object):
                              header_line_fmt % header_line,
                              curses.color_pair(1))
 
-    for idx, note in enumerate(self.notes, 0):
+    for idx, note in enumerate(self.items, 0):
       if idx < max_rows:
         date_str = convert_epoch_to_date(note.created)
         tags = self.session.get_note(note.guid)[0]
@@ -162,7 +201,7 @@ class EmGui(object):
         return
 
   def draw_note(self, note_index):
-    note = self.notes[note_index]
+    note = self.items[note_index]
     guid = note.guid
     y, x = self.notes_screen.getmaxyx()
     note_screen_x = x
@@ -207,9 +246,9 @@ class EmGui(object):
     while True:
       self.update_status()
       if self.in_note:
-        self.draw_notelist(self.index)
+        self.draw_list(self.index)
       else:
-        self.draw_notelist()
+        self.draw_list()
       c = self.notes_screen.getch()
       if c in KEYS_UP:
         self.move_up()
@@ -222,6 +261,9 @@ class EmGui(object):
           self.in_note = False
         else:
           return
+      elif c == ord('c'):
+        if not self.in_note:
+          self.change_notebook()
       elif c == ord('h'):
         self.draw_help()
 
@@ -238,3 +280,13 @@ class EmGui(object):
                               status_line_fmt % status_line,
                               curses.color_pair(1))
     self.status_screen.refresh()
+
+  def change_notebook(self):
+    notebooks = self.session.get_notebooks()
+    notebook_names = []
+    for nb in notebooks:
+      notebook_names.append(nb.name)
+    NoteBookSelector = GuiSelectableList(notebook_names, "Select a notebook:", self.notes_screen)
+    new_notebook = NoteBookSelector.run_loop()
+    self.session.change_notebook(notebooks[new_notebook])
+    self.items = self.session.get_note_metadata()

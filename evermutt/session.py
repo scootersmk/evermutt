@@ -23,6 +23,7 @@ class EnSession(object):
     self.defaultNotebook = None
     self.cache = None
     self.config = None
+    self.notebook_list = None
 
     #FIXME: Currently written to only operate on defaultNotebook
     self.notebook = None
@@ -47,6 +48,7 @@ class EnSession(object):
     self.defaultNotebook = self.noteStore.getDefaultNotebook()
     self.notebook = self.defaultNotebook
     self.notebook_name = self.defaultNotebook.name
+    self.notebook_list = self.noteStore.listNotebooks()
 
   def create_note(self, title):
     note = Types.Note()
@@ -60,7 +62,7 @@ class EnSession(object):
 
   def _get_note_metadata(self):
     notefilter = NotesStore.NoteFilter()
-    notefilter.notebookGuid = self.defaultNotebook.guid
+    notefilter.notebookGuid = self.notebook.guid
     resultspec = NotesStore.NotesMetadataResultSpec()
     resultspec.includeTitle = True
     resultspec.includeCreated = True
@@ -94,3 +96,10 @@ class EnSession(object):
   def get_note_tags(self, note_guid):
     tags = self.noteStore.getNoteTagNames(note_guid)
     return tags
+
+  def get_notebooks(self):
+    return self.notebook_list
+
+  def change_notebook(self, notebook):
+    self.notebook = notebook
+    self.note_metadata = self._get_note_metadata()
