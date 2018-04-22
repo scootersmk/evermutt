@@ -44,10 +44,11 @@
     - By title
   - Sync(S)
   - View Note
-    - Edit Note Content
-    - Tag Note
-    - Trash Note
+  - Edit Note Content
+  - Tag Note
+  - Trash Note
   - Create Note(n)
+  - Create Notebook(N)
   - Search(/)
 
 ## Editing Modes
