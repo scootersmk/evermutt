@@ -22,6 +22,11 @@ class EmGui(object):
     self.index = 0
     self.in_note = False
 
+    #Valid gui contexts
+    # NoteList
+    # NoteView
+    self.context = 'NoteList'
+
   def start(self, stdscr):
     curses.curs_set(0)
     stdscr.clear()
@@ -98,16 +103,61 @@ class EmGui(object):
     if draw_note_index is not None:
       self.draw_note(draw_note_index)
 
-  def draw_prompt(self, message):
+  def draw_help(self):
+    options = {}
+    options['change_notebook'] = {}
+    options['change_notebook']['description'] = 'Change current notebook'
+    options['change_notebook']['keys'] = 'c'
+    options['change_notebook']['status'] = 'not_implemented'
+    options['trash_note'] = {}
+    options['trash_note']['description'] = 'Move currently selected note to trash'
+    options['trash_note']['keys'] = 'd'
+    options['trash_note']['status'] = 'not_implemented'
+    options['view_note'] = {}
+    options['view_note']['description'] = 'View selected note'
+    options['view_note']['keys'] = '<enter>'
+    options['view_note']['status'] = None
+    options['create_note'] = {}
+    options['create_note']['description'] = 'Create new note'
+    options['create_note']['keys'] = 'n'
+    options['create_note']['status'] = 'not_implemented'
+    options['sort_notes'] = {}
+    options['sort_notes']['description'] = 'Sort note list'
+    options['sort_notes']['keys'] = 's'
+    options['sort_notes']['status'] = 'not_implemented'
+    options['edit_note'] = {}
+    options['edit_note']['description'] = 'Edit content of currently selected note'
+    options['edit_note']['keys'] = 'e'
+    options['edit_note']['status'] = 'not_implemented'
+    options['sync_notes'] = {}
+    options['sync_notes']['description'] = 'Sync notes with Evernote Server'
+    options['sync_notes']['keys'] = 'S'
+    options['sync_notes']['status'] = 'not_implemented'
+    options['tag_note'] = {}
+    options['tag_note']['description'] = 'Manage tags on currently selected note'
+    options['tag_note']['keys'] = 't'
+    options['tag_note']['status'] = 'not_implemented'
+
+
     y, x = self.notes_screen.getmaxyx()
-    prompt_size_x = x / 2
-    prompt_size_y = y / 2
-    prompt_screen = curses.newwin(prompt_size_y, prompt_size_x, 15, 15)
-    prompt_screen.box()
-    prompt_screen.refresh()
+    help_screen = curses.newwin(y, x, 0, 0)
+    help_screen.box()
+
+    help_screen.addstr(0, 5, "| Help |")
+    help_screen.addstr(1, 2, "%-10s %s" % ('Keys', 'Description'))
+
+    for i, k in enumerate(options.keys()):
+      if options[k]['status']:
+        desc = "%s(%s)" % (options[k]['description'], options[k]['status'])
+      else:
+        desc = options[k]['description']
+      keys = options[k]['keys']
+      help_screen.addstr(i + 2, 2, "%-10s %s" % (keys, desc))
+
+    help_screen.refresh()
 
     while True:
-      c = prompt_screen.getch()
+      c = help_screen.getch()
       if c is not None:
         return
 
@@ -173,7 +223,7 @@ class EmGui(object):
         else:
           return
       elif c == ord('h'):
-        self.draw_prompt("Hello World")
+        self.draw_help()
 
   def update_status(self):
     notebook = self.session.notebook_name
