@@ -8,8 +8,9 @@ from evermutt.gui import EmGui
 from evermutt.session import EnSession
 
 def gui_setup(stdscr, session):
-  gui = EmGui(session)
-  gui.start(stdscr)
+  items = session.get_note_metadata()
+  gui = EmGui(items, None, stdscr, session)
+  gui.start()
 
 def main():
   parser = argparse.ArgumentParser()

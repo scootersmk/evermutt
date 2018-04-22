@@ -59,29 +59,29 @@ class GuiSelectableList(object):
         return self.index
 
 class EmGui(GuiSelectableList):
-  def __init__(self, session):
+  def __init__(self, items, title, screen, session):
     #if len(notes) == 0:
     #  raise ValueError('notes should not be an empty list')
 
+    GuiSelectableList.__init__(self, items, title, screen)
+
     self.session = session
-    self.items = self.session.get_note_metadata()
     self.notes_screen = None
     self.status_screen = None
-    self.index = 0
-    self.in_note = False
+    self.draw_note = False
 
     #Valid gui contexts
     # NoteList
     # NoteView
     self.context = 'NoteList'
 
-  def start(self, stdscr):
+  def start(self):
     curses.curs_set(0)
-    stdscr.clear()
+    self.screen.clear()
     curses.init_pair(1, curses.COLOR_YELLOW, curses.COLOR_BLUE)
 
     #Create window that will contain the note list
-    y, x = stdscr.getmaxyx()
+    y, x = self.screen.getmaxyx()
     notes_screen_y = y - 2
     #FIXME: set to less than number of notes, to test/fix scrolling
     #notes_screen_y = 5
@@ -96,7 +96,7 @@ class EmGui(GuiSelectableList):
     self.run_loop()
 
 
-  def draw_list(self, draw_note_index=None):
+  def draw_list(self):
     """draw the curses ui on the screen, handle scroll if needed"""
     self.notes_screen.clear()
 
@@ -139,8 +139,8 @@ class EmGui(GuiSelectableList):
 
     self.notes_screen.refresh()
 
-    if draw_note_index is not None:
-      self.draw_note(draw_note_index)
+    if self.draw_note:
+      self.draw_note_screen()
 
   def draw_help(self):
     options = {}
@@ -200,8 +200,8 @@ class EmGui(GuiSelectableList):
       if c is not None:
         return
 
-  def draw_note(self, note_index):
-    note = self.items[note_index]
+  def draw_note_screen(self):
+    note = self.items[self.index]
     guid = note.guid
     y, x = self.notes_screen.getmaxyx()
     note_screen_x = x
@@ -245,24 +245,21 @@ class EmGui(GuiSelectableList):
   def run_loop(self):
     while True:
       self.update_status()
-      if self.in_note:
-        self.draw_list(self.index)
-      else:
-        self.draw_list()
+      self.draw_list()
       c = self.notes_screen.getch()
       if c in KEYS_UP:
         self.move_up()
       elif c in KEYS_DOWN:
         self.move_down()
       elif c in KEYS_ENTER:
-        self.in_note = True
+        self.draw_note = True
       elif c == ord('q'):
-        if self.in_note:
-          self.in_note = False
+        if self.draw_note:
+          self.draw_note = False
         else:
           return
       elif c == ord('c'):
-        if not self.in_note:
+        if not self.draw_note:
           self.change_notebook()
       elif c == ord('h'):
         self.draw_help()
